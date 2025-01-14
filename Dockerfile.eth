@@ -1,0 +1,20 @@
+# Étape 1 : Utiliser une image Node.js officielle
+FROM node:18
+
+# Étape 2 : Définir le répertoire de travail
+WORKDIR /usr/src/hardhat
+
+# Étape 3 : Copier les fichiers package.json et package-lock.json
+COPY package*.json ./
+
+# Étape 4 : Installer tout localement (y compris Hardhat)
+RUN npm install
+
+# Étape 5 : Copier tout le contenu du projet dans l'image Docker
+COPY . .
+
+# Étape 6 : Exposer le port utilisé par Hardhat (8545 par défaut)
+EXPOSE 8546
+
+# Étape 7 : Lancer le nœud localement
+CMD ["npx", "hardhat", "node"]

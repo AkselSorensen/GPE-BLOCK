@@ -1,13 +1,26 @@
-# docker-compose.yml
-version: '3.8'
-
+# Orchestration des conteneurs Node.js (Backend) et Hardhat (Ethereum)
 services:
-  blockchain_app:
+  node-app:
     build:
-      context: .  # Le Dockerfile est dans le répertoire courant
+      context: .                     # Indique où trouver le Dockerfile
+      dockerfile: Dockerfile         # Utiliser le Dockerfile pour l'application Node.js
     ports:
-      - "3000:3000"  # Expose le port 3000 du conteneur au port 3000 de l'hôte
-    container_name: blockchain_app
-    restart: always  # Redémarre automatiquement le conteneur en cas de crash ou de redémarrage
+      - "3000:3000"                 # Expose le port 3000 pour le backend
+    volumes:
+      - .:/usr/src/app              # Synchronisation des fichiers locaux avec le conteneur
+    depends_on:
+      - ethereum-node               # Dépendance au conteneur Ethereum
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development        # Variable d'environnement pour Node.js
+
+  ethereum-node:
+    build:
+      context: .                     # Indique où trouver le Dockerfile.eth
+      dockerfile: Dockerfile.eth     # Utiliser le Dockerfile pour Ethereum (Hardhat)
+    ports:
+      - "8546:8545"                 # Expose le port 8545 pour interagir avec Hardhat
+    volumes:
+      - ./contracts:/usr/src/hardhat/contracts        # Synchronisation des fichiers de contrats
+      - ./scripts:/usr/src/hardhat/scripts            # Synchronisation des scripts
+      - ./hardhat.config.js:/usr/src/hardhat/hardhat.config.js # Synchronisation du fichier de config
+    command: npx hardhat node       # Commande pour lancer le nœud local d'Ethereum

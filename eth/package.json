@@ -1,0 +1,13 @@
+{
+    "name": "ethereum-node",
+    "version": "1.0.0",
+    "description": "Hardhat Ethereum Node",
+    "main": "hardhat.config.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "devDependencies": {
+      "hardhat": "^2.22.0",
+      "@nomicfoundation/hardhat-toolbox": "^2.0.0"
+    }
+  }

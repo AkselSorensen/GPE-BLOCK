@@ -1,13 +1,18 @@
 {
-    "name": "blockchain-app",
+    "name": "backend-gamefi",
     "version": "1.0.0",
-    "description": "Une blockchain personnalisée avec un système de tokens RECIPHARMA.",
+    "description": "Backend GameFi",
     "main": "app.js",
     "scripts": {
-      "start": "node app.js"
+        "start": "node app.js"
     },
     "dependencies": {
-      "express": "^4.18.2",
-      "jsonwebtoken": "^8.5.1"
+        "ethers": "^6.13.5",
+        "express": "^4.18.2",
+        "jsonwebtoken": "^9.0.0"
+    },
+    "devDependencies": {
+        "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+        "hardhat": "^2.22.18"
     }
-  }
+}

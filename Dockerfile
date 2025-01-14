@@ -1,22 +1,20 @@
-# Dockerfile
+# 1. Utilisez une image Node.js officielle
+FROM node:18
 
-# Étape 1 : Utiliser une image Node.js officielle (version LTS)
-FROM node:14
+# 2. Définissez le répertoire de travail dans le conteneur
+WORKDIR /usr/src/app
 
-# Étape 2 : Définir le répertoire de travail dans le conteneur
-WORKDIR /app
-
-# Étape 3 : Copier les fichiers package.json et package-lock.json
+# 3. Copiez les fichiers package*.json pour installer les dépendances
 COPY package*.json ./
 
-# Étape 4 : Installer les dépendances définies dans package.json
+# 4. Installez les dépendances Node.js
 RUN npm install
 
-# Étape 5 : Copier le reste des fichiers du projet dans le conteneur
+# 5. Copiez tout le contenu du projet
 COPY . .
 
-# Étape 6 : Exposer le port utilisé par l'application (par défaut, 3000)
+# 6. Exposez le port utilisé par l'application
 EXPOSE 3000
 
-# Étape 7 : Commande pour démarrer l'application
-CMD ["npm", "start"]
+# 7. Commande pour exécuter l'application
+CMD ["node", "app.js"]
