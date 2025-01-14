@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  blockchain_app:
+    build:
+      context: . # Le répertoire actuel où se trouve le Dockerfile
+    container_name: blockchain_app # Nom du conteneur
+    ports:
+      - "3000:3000" # Mapper le port 3000 du conteneur au port 3000 de l'hôte
+    environment:
+      # Vous pouvez ajouter des variables d'environnement ici si nécessaire
+      - NODE_ENV=production
+    restart: always # Redémarrer automatiquement en cas d'erreur ou plantage
+    volumes:
+      # Si vous souhaitez monter le projet local dans le conteneur (pour faciliter le développement)
+      - .:/app
+      # Optionnel : Ajoutez un volume pour les dépendances (npm_modules) pour éviter les réinstallations à chaque build
+      - /app/node_modules
+    command: "npm start" # Commande lancée à chaque démarrage du conteneur

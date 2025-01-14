@@ -1,0 +1,13 @@
+{
+    "name": "blockchain_app",
+    "version": "1.0.0",
+    "description": "Une blockchain personnalisée avec un système de tokens.",
+    "main": "app.js",
+    "scripts": {
+      "start": "node app.js"
+    },
+    "dependencies": {
+      "express": "^4.18.2",
+      "body-parser": "^1.20.2"
+    }
+  }
