@@ -1,51 +1,64 @@
-// Importer les dépendances
 const express = require('express');
-const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
-const { Blockchain, Transaction } = require('./blockchain');
+const { Blockchain, Transaction } = require('./blockchain'); // Votre fichier blockchain.js
 
 // Configuration
-const SECRET_KEY = "Votre_Secret_Key"; // Changez pour un environnement de production
 const app = express();
 const PORT = 3000;
+const SECRET_KEY = "votre_clé_secrète"; // Changez cette clé en production pour la sécuriser.
 
-// Initialisation de l'application et de la blockchain
-app.use(bodyParser.json());
-const myBlockchain = new Blockchain();
+app.use(express.json());
+const myBlockchain = new Blockchain(); // Instanciation de la blockchain
 
-// Middleware pour vérifier l'authentification JWT
-function authMiddleware(req, res, next) {
-    const token = req.headers['authorization'];
-    if (!token) {
-        return res.status(403).send("Un token est requis pour accéder à cette route.");
-    }
+// Créer un Jeton JWT
+function generateToken(user) {
+    return jwt.sign({ username: user.username }, SECRET_KEY, { expiresIn: '1h' });
+}
+
+// Vérifier le Token JWT
+function verifyToken(token) {
     try {
-        const decoded = jwt.verify(token, SECRET_KEY);
-        req.user = decoded;
+        return jwt.verify(token, SECRET_KEY);
     } catch (err) {
-        return res.status(401).send("Token invalide.");
+        return null;
     }
+}
+
+// Middleware pour vérifier le JWT
+function authMiddleware(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (!token) {
+        return res.status(403).send('Un token est requis pour accéder à cette ressource.');
+    }
+    const user = verifyToken(token);
+    if (!user) {
+        return res.status(401).send('Token invalide ou expiré.');
+    }
+    req.user = user; // Inclure les informations de l'utilisateur dans la requête
     next();
 }
 
-// Route : Générer un token d'authentification (Login)
+// --- ROUTES EXISTANTES ---
+
+// Route : Login pour générer un Token JWT
 app.post('/login', (req, res) => {
     const { username } = req.body;
     if (!username) {
-        return res.status(400).json({ error: "Nom d'utilisateur requis." });
+        return res.status(400).send("Nom d'utilisateur requis.");
     }
-    // Générer un token avec un temps d'expiration de 1 heure
-    const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: "1h" });
+    const token = generateToken({ username });
     res.status(200).json({ token });
 });
 
-// Route : Afficher la blockchain (avec pagination)
+// Route : Voir la blockchain avec pagination
 app.get('/blockchain', (req, res) => {
-    const { limit = 10, offset = 0 } = req.query; // Paramètres de pagination
-    const paginatedChain = myBlockchain.chain.slice(offset, +offset + +limit);
-    res.status(200).json({ 
+    const { limit = 10, offset = 0 } = req.query;
+    res.status(200).json({
         totalBlocks: myBlockchain.chain.length,
-        chain: paginatedChain
+        limit: Number(limit),
+        offset: Number(offset),
+        chain: myBlockchain.chain.slice(Number(offset), Number(offset) + Number(limit)),
     });
 });
 
@@ -55,89 +68,135 @@ app.post('/transaction', authMiddleware, (req, res) => {
     try {
         const transaction = new Transaction(sender, recipient, amount);
         myBlockchain.addTransaction(transaction);
-        res.status(200).json({ 
-            message: `Transaction ajoutée : ${amount} tokens de ${sender} à ${recipient}`
+        res.status(200).json({
+            message: `Transaction ajoutée : ${amount} tokens transférés de ${sender} à ${recipient}`,
         });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 });
 
-// Route : Miner les blocs de transactions en attente
+// Route : Miner les transactions en attente
 app.post('/mine', authMiddleware, (req, res) => {
     const { minerAddress } = req.body;
     if (!minerAddress) {
-        return res.status(400).json({ error: "L'adresse du mineur est requise." });
+        return res.status(400).json({ error: "Adresse du mineur requise." });
     }
     try {
         myBlockchain.minePendingTransactions(minerAddress);
-        res.status(200).json({ 
+        res.status(200).json({
             message: "Bloc miné avec succès !",
-            reward: `${myBlockchain.miningReward} tokens attribués à ${minerAddress}`
+            reward: `${myBlockchain.miningReward} tokens attribués à ${minerAddress}`,
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Route : Récompenser une action spécifique
-app.post('/reward', authMiddleware, (req, res) => {
-    const { recipient, action } = req.body;
-    const rewards = { 
-        "plant_tree": 100, // Récompense pour planter un arbre
-        "recycle": 50      // Récompense pour recycler
-    };
-    if (!rewards[action]) {
-        return res.status(400).json({ error: "Action non reconnue." });
-    }
-    const rewardAmount = rewards[action];
-    const transaction = new Transaction(null, recipient, rewardAmount); // Récompense (depuis "SYSTEM")
-    myBlockchain.addTransaction(transaction);
-    res.status(200).json({ 
-        message: `${rewardAmount} tokens attribués à ${recipient} pour l'action : ${action}`
-    });
-});
-
-// Route : Consulter les statistiques sur la blockchain
+// Route : Statistiques de la blockchain
 app.get('/stats', (req, res) => {
     const totalBlocks = myBlockchain.chain.length;
     const totalTransactions = myBlockchain.chain.reduce(
-        (sum, block) => sum + block.transactions.length,
+        (total, block) => total + block.transactions.length,
         0
     );
-    const richestAddress = Object.entries(myBlockchain.balances)
-        .sort((a, b) => b[1] - a[1])[0] || ["Aucune", 0]; // Adresse avec le plus de tokens
+    const richestUser = Object.entries(myBlockchain.balances).sort((a, b) => b[1] - a[1])[0] || ["Aucune", 0];
     res.status(200).json({
         totalBlocks,
         totalTransactions,
-        richestAddress: { 
-            address: richestAddress[0], 
-            balance: richestAddress[1] 
-        }
+        richestUser: { address: richestUser[0], balance: richestUser[1] },
     });
 });
 
-// Route : Vérifier le solde d'une adresse utilisateur
+// Route : Voir le solde d'une adresse
 app.get('/balance/:address', (req, res) => {
     const { address } = req.params;
-    try {
-        const balance = myBlockchain.getBalanceOfAddress(address);
-        res.status(200).json({ address, balance });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+    const balance = myBlockchain.getBalanceOfAddress(address);
+    res.status(200).json({ address, balance });
 });
 
-// Route : Valider l'intégrité de la blockchain
+// Route : Vérifier intégrité de la blockchain
 app.get('/validate', (req, res) => {
     if (myBlockchain.isChainValid()) {
-        res.status(200).json({ message: "La blockchain est valide." });
-    } else {
-        res.status(500).json({ message: "La blockchain est corrompue." });
+        return res.status(200).json({ message: "La blockchain est valide." });
+    }
+    return res.status(500).json({ message: "La blockchain est corrompue." });
+});
+
+// --- ROUTES GOUVERNANCE ---
+// Route : Créer une proposition (protegée par JWT)
+app.post('/proposals', authMiddleware, (req, res) => {
+    const { title, description } = req.body;
+    const author = req.user.username; // Utilisateur courant (extrait de JWT)
+    try {
+        const proposal = myBlockchain.createProposal(title, description, author);
+        res.status(200).json(proposal);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
     }
 });
 
-// Lancer le serveur Express
+// Route : Lister les propositions
+app.get('/proposals', (req, res) => {
+    const proposals = myBlockchain.listProposals();
+    res.status(200).json(proposals);
+});
+
+// Route : Voter sur une proposition (Protéger par JWT)
+app.post('/proposals/:id/vote', authMiddleware, (req, res) => {
+    const proposalId = parseInt(req.params.id, 10);
+    const { support } = req.body; // Support : true (Pour) ou false (Contre)
+    const voterAddress = req.user.username; // Utilisateur courant comme votant
+    try {
+        myBlockchain.voteOnProposal(proposalId, voterAddress, support);
+        res.status(200).json({ message: `Vote enregistré pour la proposition ID ${proposalId}.` });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// Route : Clôturer une proposition (Protéger par JWT)
+app.post('/proposals/:id/close', authMiddleware, (req, res) => {
+    const proposalId = parseInt(req.params.id, 10);
+    try {
+        myBlockchain.closeProposal(proposalId);
+        res.status(200).json({ message: `Proposition ID ${proposalId} clôturée avec succès.` });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// --- ROUTES GAMEFI (Quêtes) ---
+
+// Route : Ajouter une quête (admin ou protégé)
+app.post('/quests', authMiddleware, (req, res) => {
+    const { description, goal, reward, type } = req.body;
+    try {
+        const quest = myBlockchain.addQuest(description, goal, reward, type);
+        res.status(201).json(quest);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// Route : Lister les quêtes disponibles
+app.get('/quests', (req, res) => {
+    res.status(200).json(myBlockchain.quests);
+});
+
+// Route : Progresser dans une quête
+app.post('/quests/progress', authMiddleware, (req, res) => {
+    const { type, progress = 1 } = req.body;
+    const user = req.user.username;
+    try {
+        myBlockchain.progressQuest(user, type, progress);
+        res.status(200).json({ message: "Progression mise à jour avec succès." });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// Lancer le serveur
 app.listen(PORT, () => {
-    console.log(`Microservice blockchain à l'écoute sur http://localhost:${PORT}`);
+    console.log(`Serveur lancé sur http://localhost:${PORT}`);
 });
