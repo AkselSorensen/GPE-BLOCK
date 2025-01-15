@@ -1,0 +1,8 @@
+# 📊 Alternatives à HardHat pour un projet basé sur Ethereum
+
+Voici une liste des outils et technologies que vous pouvez utiliser comme alternatives ou compléments à **HardHat** pour votre projet.
+
+| 🛠 **Outil/Technologie**  | 🔍 **Description**                                                               | ✅ **Avantages**                                                                                       | 📌 **Cas d'utilisation**                                                      | 💡 **Commentaires**                                                                 |
+|--------------------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
+| **Truffle**              | Framework complet pour le développement de smart contracts sur Ethereum.        | - Gestion complète : écriture, tests, déploiement. <br> - Intégration avec Ganache.                   | Environnement mature et robuste pour gérer toutes les étapes du développement.| Parfait pour les projets avec un besoin de fonctionnalités centralisées.           |
+| **Remix IDE**            | IDE basé sur navigateur pour développer des smart contracts.                    | - Utilisation direct dans un navigateur. <br> - Interface intuitive avec plugins intégrés.            | Idéal pour des prototypes rapides ou en phase d'apprentissage.                | Solution rapide pour interaction card script.
