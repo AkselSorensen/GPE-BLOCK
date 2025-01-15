@@ -23,7 +23,5 @@ Voici une liste complète des outils et technologies disponibles pour le dévelo
 - Selon vos besoins, vous pouvez combiner plusieurs outils comme **HardHat** avec **Ganache** pour les tests locaux et **Ethers.js** pour l'intégration frontend.
 - **Truffle** est une excellente alternative si vous préférez un écosystème complet mais légèrement plus ancien que **HardHat**.
 - **Foundry** est parfait pour des projets où la rapidité et l'optimisation des tests Solidity natifs sont essentielles.
-
-N'hésitez pas à poser des questions ou à explorer ces technologies selon vos priorités techniques et objectives ! 🚀
 ---
 
