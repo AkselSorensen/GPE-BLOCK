@@ -15,9 +15,5 @@ Voici une liste des outils et technologies pour le développement basé sur Ethe
 | **Polygon**                | Sidechain compatible avec Ethereum pour des transactions rapides et peu coûteuses. | - Frais de transaction réduits.<br> - Compatibilité complète avec Ethereum.<br> - Scalabilité accrue.   | Éliminer les limites de coût et de vitesse d'Ethereum pour une adoption de masse. | Extension idéale pour les projets où la scalabilité et les coûts sont prioritaires. |
 ---
 
-### Explications :  
 
-- Les colonnes donnent un aperçu détaillé des options.  
-- Vous pouvez ajuster ou compléter les avantages ou les cas d'utilisation spécifiques à votre projet.  
-- Ce tableau peut être facilement copié dans un fichier Markdown ou converti en HTML si besoin.  
 
